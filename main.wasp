@@ -12,12 +12,27 @@ app vibeCodeWasp {
   auth: {
     userEntity: User,
     methods: {
-      usernameAndPassword: {},
+      email: {
+        fromField: {
+          name: "Budgeting Vibe",
+          email: "noreply@budgetingvibe.com"
+        },
+        emailVerification: {
+          clientRoute: EmailVerificationRoute
+        },
+        passwordReset: {
+          clientRoute: PasswordResetRoute
+        }
+      },
       // google: {},
       // github: {},
     },
     onAuthFailedRedirectTo: "/login",
     onAuthSucceededRedirectTo: "/",
+    onAfterSignup: import { handleNewUserSignup } from "@src/server/hooks.ts"
+  },
+  emailSender: {
+    provider: Dummy
   },
   client: {
     rootComponent: import Main from "@src/main",
@@ -38,10 +53,17 @@ route LoginRoute { path: "/login", to: Login }
 page Login {
   component: import { Login } from "@src/features/auth/login"
 }
+
+route EmailVerificationRoute { path: "/auth/verify-email/:token", to: EmailVerificationPage }
+page EmailVerificationPage { component: import { EmailVerification } from "@src/features/auth/EmailVerificationPage.tsx" }
+
+route PasswordResetRoute { path: "/auth/reset-password/:token", to: PasswordResetPage }
+page PasswordResetPage { component: import { PasswordReset } from "@src/features/auth/PasswordResetPage.tsx" }
 //#endregion
 
 route DashboardRoute { path: "/", to: Dashboard }
 page Dashboard {
+  authRequired: true,
   component: import Dashboard from "@src/features/dashboard/index"
 }
 
@@ -76,7 +98,6 @@ page Settings {
 //   component: import { HelpCenter } from "@src/features/help-center/index"
 // }
 
-
 //#region Error Routes
 route GeneralErrorRoute { path: "/500", to: GeneralError }
 page GeneralError {
@@ -101,5 +122,38 @@ page Unauthorized {
 route MaintenanceRoute { path: "/maintenance", to: Maintenance }
 page Maintenance {
   component: import Maintenance from "@src/features/errors/maintenance-error"
+}
+//#endregion
+
+//#region Budget
+// Action to create a new Envelope
+action createEnvelope {
+  fn: import { createEnvelope } from "@src/features/budget/operations.ts",
+  entities: [User, Budget, Envelope]
+}
+
+// Action to update an Envelope
+action updateEnvelope {
+  fn: import { updateEnvelope } from "@src/features/budget/operations.ts",
+  entities: [User, Budget, Envelope]
+}
+
+// Action to delete an Envelope
+action deleteEnvelope {
+  fn: import { deleteEnvelope } from "@src/features/budget/operations.ts",
+  entities: [User, Budget, Envelope]
+}
+
+// Query to get Envelopes for the user's budget
+query getEnvelopes {
+  fn: import { getEnvelopes } from "@src/features/budget/operations.ts",
+  entities: [User, Budget, Envelope]
+}
+
+// Route and Page for Budget Management UI
+route BudgetRoute { path: "/budget", to: BudgetPage }
+page BudgetPage {
+  component: import BudgetPage from "@src/features/budget/BudgetPage.tsx",
+  authRequired: true // Correct syntax for requiring auth
 }
 //#endregion

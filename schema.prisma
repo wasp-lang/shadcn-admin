@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   // Wasp requires that the url is set to the DATABASE_URL environment variable.
   url      = env("DATABASE_URL")
 }
@@ -9,9 +9,43 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Budget {
+  id        String   @id @default(uuid())
+  name      String   @default("My Budget") // Budget name, default included
+  userId    String   // Foreign key for the owner
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Relation to the owner
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Update relation field
+  envelopes   Envelope[] // Uncommented/added
+  // transactions Transaction[] // Still commented out
+  // collaborators BudgetCollaborator[] // Still commented out
+}
+
+model Envelope {
+  id        String   @id @default(uuid())
+  name      String
+  budgetId  String   // Foreign key to Budget
+  budget    Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade) // Relation to Budget
+
+  // Optional field for planned allocation - can be refined later
+  allocatedAmount Float @default(0.0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relation to Transactions (to be defined later)
+  // transactions Transaction[]
+}
+
 model User {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isActive  Boolean  @default(true)
+
+  // Add this relation: User can own Budgets
+  budgets   Budget[]
 }
