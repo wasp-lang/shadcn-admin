@@ -19,10 +19,85 @@ import { TopNav } from '../../components/layout/top-nav'
 import { ProfileDropdown } from '../../components/profile-dropdown'
 import { Search } from '../../components/search'
 import { ThemeSwitch } from '../../components/theme-switch'
-import { Overview } from './components/overview'
-import { RecentSales } from './components/recent-sales'
+import { useQuery } from 'wasp/client/operations'
+import { getAccessibleBudgets, getDashboardTotals } from 'wasp/client/operations'
+import { Link } from 'wasp/client/router'
+import { Skeleton } from '../../components/ui/skeleton'
+import { IncomeExpenseOverview } from './components/IncomeExpenseOverview'
+import { EnvelopeSpendingBreakdown } from './components/EnvelopeSpendingBreakdown'
+
+// Helper function to format currency
+const formatCurrency = (amount: number | undefined | null) => {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount ?? 0);
+};
 
 export default function Dashboard() {
+  const { data: accessibleBudgets, isLoading: isLoadingBudgets, error: errorBudgets } = useQuery(getAccessibleBudgets)
+  // Fetch dashboard totals for the cards and the chart
+  const { data: totals, isLoading: isLoadingTotals, error: errorTotals } = useQuery(
+    getDashboardTotals,
+    { budgetIds: accessibleBudgets?.map(b => b.id) ?? [] },
+    { enabled: !!accessibleBudgets } // Only run when budgets are loaded
+  );
+
+  const budgetIds = accessibleBudgets?.map(b => b.id) ?? []
+
+  // Combined loading state
+  const isLoading = isLoadingBudgets || isLoadingTotals;
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Skeleton className="h-8 w-1/4" />
+        <div className="flex space-x-2 border-b pb-2">
+           <Skeleton className="h-10 w-24" />
+           <Skeleton className="h-10 w-24" />
+        </div>
+         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-[118px]" />
+            <Skeleton className="h-[118px]" />
+            <Skeleton className="h-[118px]" />
+         </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <Skeleton className="col-span-4 h-[418px]" />
+          <Skeleton className="col-span-3 h-[418px]" />
+        </div>
+      </div>
+    )
+  }
+
+  if (errorBudgets || errorTotals) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 text-red-500">
+        Error loading dashboard data: {errorBudgets?.message || errorTotals?.message}
+      </div>
+    )
+  }
+
+  if (!accessibleBudgets || accessibleBudgets.length === 0) {
+    return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Welcome!</CardTitle>
+            <CardDescription>You don't seem to have any budgets yet.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p>Get started by creating your first budget.</p>
+            <Button asChild className="mt-4">
+              <Link to={routes.BudgetRoute.to}>Go to Budget Setup</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const remaining = (totals?.income ?? 0) - (totals?.expense ?? 0);
+
   return (
     <>
       {/* ===== Top Heading ===== */}
@@ -39,9 +114,6 @@ export default function Dashboard() {
       <Main>
         <div className='mb-2 flex items-center justify-between space-y-2'>
           <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
-          <div className='flex items-center space-x-2'>
-            <Button>Download</Button>
-          </div>
         </div>
         <Tabs
           orientation='vertical'
@@ -51,23 +123,14 @@ export default function Dashboard() {
           <div className='w-full overflow-x-auto pb-2'>
             <TabsList>
               <TabsTrigger value='overview'>Overview</TabsTrigger>
-              <TabsTrigger value='analytics' disabled>
-                Analytics
-              </TabsTrigger>
-              <TabsTrigger value='reports' disabled>
-                Reports
-              </TabsTrigger>
-              <TabsTrigger value='notifications' disabled>
-                Notifications
-              </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value='overview' className='space-y-4'>
-            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Total Revenue
+                    Total Income (This Month)
                   </CardTitle>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
@@ -83,42 +146,14 @@ export default function Dashboard() {
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>$45,231.89</div>
-                  <p className='text-xs text-muted-foreground'>
-                    +20.1% from last month
-                  </p>
+                  <div className='text-2xl font-bold'>{formatCurrency(totals?.income)}</div>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
                   <CardTitle className='text-sm font-medium'>
-                    Subscriptions
+                    Total Spent (This Month)
                   </CardTitle>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    fill='none'
-                    stroke='currentColor'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth='2'
-                    className='h-4 w-4 text-muted-foreground'
-                  >
-                    <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-                    <circle cx='9' cy='7' r='4' />
-                    <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
-                  </svg>
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>+2350</div>
-                  <p className='text-xs text-muted-foreground'>
-                    +180.1% from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>Sales</CardTitle>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
                     viewBox='0 0 24 24'
@@ -130,21 +165,16 @@ export default function Dashboard() {
                     className='h-4 w-4 text-muted-foreground'
                   >
                     <rect width='20' height='14' x='2' y='5' rx='2' />
-                    <path d='M2 10h20' />
+                    <line x1='2' x2='22' y1='10' y2='10' />
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>+12,234</div>
-                  <p className='text-xs text-muted-foreground'>
-                    +19% from last month
-                  </p>
+                  <div className='text-2xl font-bold'>{formatCurrency(totals?.expense)}</div>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>
-                    Active Now
-                  </CardTitle>
+                  <CardTitle className='text-sm font-medium'>Remaining (This Month)</CardTitle>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
                     viewBox='0 0 24 24'
@@ -155,35 +185,32 @@ export default function Dashboard() {
                     strokeWidth='2'
                     className='h-4 w-4 text-muted-foreground'
                   >
-                    <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
+                    <path d='M12 2c-3 0-5.5 1.12-5.5 2.5S9 7 12 7s5.5-1.12 5.5-2.5S15 2 12 2Z' />
+                    <path d='M12 7v1M7 16c0-4.42 3.58-8 8-8' />
+                    <path d='M12 14a1 1 0 1 0 0 2 1 1 0 1 0 0-2Z' />
+                    <path d='M12 22v-4M18.5 16.5a3.5 3.5 0 1 0-7 0' />
                   </svg>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-2xl font-bold'>+573</div>
-                  <p className='text-xs text-muted-foreground'>
-                    +201 since last hour
-                  </p>
+                  <div className={`text-2xl font-bold ${remaining < 0 ? 'text-red-500' : ''}`}>{formatCurrency(remaining)}</div>
                 </CardContent>
               </Card>
             </div>
             <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
               <Card className='col-span-1 lg:col-span-4'>
                 <CardHeader>
-                  <CardTitle>Overview</CardTitle>
+                  <CardTitle>Income vs. Expense</CardTitle>
                 </CardHeader>
                 <CardContent className='pl-2'>
-                  <Overview />
+                  <IncomeExpenseOverview budgetIds={budgetIds} />
                 </CardContent>
               </Card>
               <Card className='col-span-1 lg:col-span-3'>
                 <CardHeader>
-                  <CardTitle>Recent Sales</CardTitle>
-                  <CardDescription>
-                    You made 265 sales this month.
-                  </CardDescription>
+                  <CardTitle>Spending by Envelope</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <RecentSales />
+                <CardContent className='pl-0 md:pl-2'>
+                  <EnvelopeSpendingBreakdown budgetIds={budgetIds} />
                 </CardContent>
               </Card>
             </div>
@@ -196,7 +223,7 @@ export default function Dashboard() {
 
 type TopNavLink = {
   title: string
-  href: Routes['to']
+  href: keyof typeof routes
   isActive: boolean
   disabled: boolean
 }
@@ -204,25 +231,25 @@ type TopNavLink = {
 const topNav: TopNavLink[] = [
   {
     title: 'Overview',
-    href: routes.DashboardRoute.to,
+    href: 'DashboardRoute',
     isActive: true,
     disabled: false,
   },
   {
-    title: 'Customers',
-    href: routes.DashboardRoute.to,
+    title: 'Budget',
+    href: 'BudgetRoute',
     isActive: false,
-    disabled: true,
+    disabled: false,
   },
   {
-    title: 'Products',
-    href: routes.DashboardRoute.to,
+    title: 'Transactions',
+    href: 'TransactionsRoute',
     isActive: false,
-    disabled: true,
+    disabled: false,
   },
   {
     title: 'Settings',
-    href: routes.DashboardRoute.to,
+    href: 'SettingsRoute',
     isActive: false,
     disabled: true,
   },

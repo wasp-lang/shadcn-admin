@@ -4,6 +4,7 @@ import type {
   RemoveCollaborator,
   UpdateCollaboratorRole,
   GetBudgetCollaborators,
+  GetAccessibleBudgets,
 } from 'wasp/server/operations';
 import type { User, Budget, BudgetCollaborator } from 'wasp/entities';
 import { CollaboratorRole } from '@prisma/client'; // Import enum value
@@ -321,4 +322,32 @@ export const getBudgetCollaborators: GetBudgetCollaborators<
   });
 
   return collaboratorsWithEmail;
+};
+
+export const getAccessibleBudgets: GetAccessibleBudgets<void, Budget[]> = async (
+  _args,
+  context
+) => {
+  if (!context.user) {
+    throw new HttpError(401, 'User not authenticated');
+  }
+
+  // Find budgets where the user is either the owner (linked directly)
+  // or listed as a collaborator
+  const budgets = await context.entities.Budget.findMany({
+    where: {
+      OR: [
+        { userId: context.user.id }, // Budgets owned by the user
+        {
+          collaborators: {
+            // Budgets where the user is a collaborator
+            some: { userId: context.user.id },
+          },
+        },
+      ],
+    },
+    orderBy: { name: 'asc' }, // Optional: order by name
+  });
+
+  return budgets;
 }; 

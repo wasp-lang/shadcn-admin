@@ -15,7 +15,7 @@ app vibeCodeWasp {
       email: {
         fromField: {
           name: "Budgeting Vibe",
-          email: "noreply@budgetingvibe.com"
+          email: "vince@wasp-lang.dev"
         },
         emailVerification: {
           clientRoute: EmailVerificationRoute
@@ -32,7 +32,11 @@ app vibeCodeWasp {
     onAfterSignup: import { handleNewUserSignup } from "@src/server/hooks.ts"
   },
   emailSender: {
-    provider: Dummy
+    provider: SendGrid,
+    defaultFrom: {
+      name: "Budgeting Vibe",
+      email: "vince@wasp-lang.dev"
+    },
   },
   client: {
     rootComponent: import Main from "@src/main",
@@ -225,5 +229,23 @@ action updateCollaboratorRole {
 query getBudgetCollaborators {
   fn: import { getBudgetCollaborators } from "@src/features/collaboration/operations.ts",
   entities: [User, Budget, BudgetCollaborator]
+}
+
+// Added query
+query getAccessibleBudgets {
+  fn: import { getAccessibleBudgets } from "@src/features/collaboration/operations.ts",
+  entities: [User, Budget, BudgetCollaborator]
+}
+//#endregion
+
+//#region Dashboard
+query getDashboardTotals {
+  fn: import { getDashboardTotals } from "@src/features/dashboard/operations.ts",
+  entities: [User, Transaction, Budget]
+}
+
+query getSpendingByEnvelope {
+  fn: import { getSpendingByEnvelope } from "@src/features/dashboard/operations.ts",
+  entities: [User, Transaction, Budget, Envelope]
 }
 //#endregion
