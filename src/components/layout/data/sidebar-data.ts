@@ -18,6 +18,8 @@ import {
   IconUserCog,
   IconUserOff,
   IconUsers,
+  IconCreditCard,
+  IconArrowsExchange,
 } from '@tabler/icons-react'
 import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
 import { type SidebarData } from '../types'
@@ -53,6 +55,16 @@ export const sidebarData: SidebarData = {
           title: 'Dashboard',
           url: '/',
           icon: IconLayoutDashboard,
+        },
+        {
+          title: 'Budget',
+          url: '/budget',
+          icon: IconCreditCard,
+        },
+        {
+          title: 'Transactions',
+          url: '/transactions',
+          icon: IconArrowsExchange,
         },
         {
           title: 'Tasks',

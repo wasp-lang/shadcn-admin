@@ -19,9 +19,9 @@ model Budget {
   updatedAt DateTime @updatedAt
 
   // Update relation field
-  envelopes   Envelope[] // Uncommented/added
-  // transactions Transaction[] // Still commented out
-  // collaborators BudgetCollaborator[] // Still commented out
+  envelopes   Envelope[]
+  transactions Transaction[]
+  collaborators BudgetCollaborator[] // Add relation to collaborators
 }
 
 model Envelope {
@@ -37,7 +37,7 @@ model Envelope {
   updatedAt DateTime @updatedAt
 
   // Relation to Transactions (to be defined later)
-  // transactions Transaction[]
+  transactions Transaction[]
 }
 
 model User {
@@ -48,4 +48,52 @@ model User {
 
   // Add this relation: User can own Budgets
   budgets   Budget[]
+  collaborations BudgetCollaborator[] // Add relation to collaborations
+}
+
+// Add TransactionType enum
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+// Add Transaction model
+model Transaction {
+  id          String   @id @default(uuid())
+  date        DateTime
+  description String
+  amount      Float
+  type        TransactionType // Use the enum defined above
+
+  envelopeId String
+  envelope   Envelope @relation(fields: [envelopeId], references: [id], onDelete: Cascade)
+
+  budgetId String
+  budget   Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Add CollaboratorRole enum
+enum CollaboratorRole {
+  OWNER   // Can manage budget settings, envelopes, transactions, and collaborators
+  EDITOR  // Can manage envelopes and transactions
+  VIEWER  // Can only view envelopes and transactions
+}
+
+// Add BudgetCollaborator join table (Declared before being referenced)
+model BudgetCollaborator {
+  id        String   @id @default(uuid())
+  budgetId  String
+  userId    String
+  role      CollaboratorRole @default(VIEWER)
+
+  budget    Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  // Ensure a user can only have one role per budget
+  @@unique([budgetId, userId])
 }

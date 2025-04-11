@@ -27,20 +27,20 @@ This plan outlines the steps for building the application using a Milestone-Base
 
 *   **Goal:** Allow users to manually add income and expense transactions and assign them to specific **Envelopes**, and display calculated envelope summaries.
 *   **Steps/User Stories:**
-    *   - [ ] **2.1. Transaction Entity:** Define a `Transaction` entity in `schema.prisma` linked to `Budget` (`budgetId`) and `Envelope` (`envelopeId`). Include fields: `date` (DateTime), `description` (String), `amount` (Float or Decimal), `type` (Enum: `INCOME` | `EXPENSE`), `envelopeId` (linking to the envelope), `budgetId`. Define the `TransactionType` enum.
+    *   - [x] **2.1. Transaction Entity:** Define a `Transaction` entity in `schema.prisma` linked to `Budget` (`budgetId`) and `Envelope` (`envelopeId`). Include fields: `date` (DateTime), `description` (String), `amount` (Float or Decimal), `type` (Enum: `INCOME` | `EXPENSE`), `envelopeId` (linking to the envelope), `budgetId`. Define the `TransactionType` enum.
     *   - [ ] **2.2. CRUD Operations for Transactions:** Implement Wasp actions and queries in `src/features/transactions/operations.ts`:
-        *   - [ ] `createTransaction(data: { date, description, amount, type, envelopeId })` - Ensure it associates with the correct budget and selected envelope.
-        *   - [ ] `getTransactions()` - Return transactions for the user's budget, including envelope information.
-        *   - [ ] `updateTransaction(...)` - (Stretch Goal for P2).
-        *   - [ ] `deleteTransaction(...)` - (Stretch Goal for P2).
-    *   - [ ] **2.3. Transaction Form UI:** Create a component `src/features/transactions/TransactionForm.tsx`. Use Shadcn-ui inputs:
-        *   - [ ] DatePicker, Input (Description, Amount), Select (Type).
-        *   - [ ] Select for **Envelope** populated using `getEnvelopes`.
-        *   - [ ] Trigger `createTransaction` on submit.
-    *   - [ ] **2.4. Transaction List UI:** Create a `TransactionsPage.tsx` page (`/transactions`) or integrate into `BudgetPage.tsx`. Use a Shadcn-ui Table to display transactions, including the assigned **Envelope**.
-    *   - [ ] **2.5. Calculate and Display Envelope Summaries:**
-        *   - [ ] Modify the `getEnvelopes` query (or create a new query/logic) to calculate the total amount spent (sum of expense transactions) for each envelope.
-        *   - [ ] Update the `BudgetPage.tsx` UI (Envelope cards from Step 1.5) to display the calculated "Spent" amount and the derived "Remaining" amount (`allocated - spent`).
+        *   - [x] `createTransaction(data: { date, description, amount, type, envelopeId })` - Ensure it associates with the correct budget and selected envelope.
+        *   - [x] `getTransactions()` - Return transactions for the user's budget, including envelope information.
+        *   - [x] `updateTransaction(...)` - (Stretch Goal for P2).
+        *   - [x] `deleteTransaction(...)` - (Stretch Goal for P2).
+    *   - [x] **2.3. Transaction Form UI:** Create a component `src/features/transactions/TransactionForm.tsx`. Use Shadcn-ui inputs:
+        *   - [x] DatePicker, Input (Description, Amount), Select (Type).
+        *   - [x] Select for **Envelope** populated using `getEnvelopes`.
+        *   - [x] Trigger `createTransaction` on submit.
+    *   - [x] **2.4. Transaction List UI:** Create a `TransactionsPage.tsx` page (`/transactions`) or integrate into `BudgetPage.tsx`. Use a Shadcn-ui Table to display transactions, including the assigned **Envelope**.
+    *   - [x] **2.5. Calculate and Display Envelope Summaries:**
+        *   - [x] Modify the `getEnvelopes` query (or create a new query/logic) to calculate the total amount spent (sum of expense transactions) for each envelope.
+        *   - [x] Update the `BudgetPage.tsx` UI (Envelope cards from Step 1.5) to display the calculated "Spent" amount and the derived "Remaining" amount (`allocated - spent`).
 
 ---
 
@@ -48,15 +48,16 @@ This plan outlines the steps for building the application using a Milestone-Base
 
 *   **Goal:** Enable users to invite others to view and/or edit their budget, including its **Envelopes** and transactions.
 *   **Steps/User Stories:**
-    *   - [ ] **3.1. Collaboration Model:** Define the relationship in `schema.prisma`. A `BudgetCollaborator` join table linking `User` and `Budget`. Include a `role` (Enum: `OWNER` | `EDITOR` | `VIEWER`). Define the `CollaboratorRole` enum. Ensure the budget creator is added as `OWNER`.
-    *   - [ ] **3.2. Invite/Manage Collaborators Actions:** Implement Wasp actions in `src/features/collaboration/operations.ts`:
-        *   - [ ] `inviteCollaborator(budgetId: string, email: string, role: CollaboratorRole)`.
-        *   - [ ] `removeCollaborator(budgetId: string, userId: string)`.
-        *   - [ ] `updateCollaboratorRole(...)`.
-    *   - [ ] **3.3. Modify Operations for Permissions:** Update all relevant queries and actions (`getEnvelopes`, `createEnvelope`, `createTransaction`, `getTransactions`, etc.) to check `context.user`'s permissions via `BudgetCollaborator` for the target `Budget`. Ensure users can only affect budgets/envelopes they have access to.
-    *   - [ ] **3.4. Collaboration UI:** Add UI elements (e.g., on `BudgetPage.tsx` or settings):
-        *   - [ ] For Owners: Invite by email, list collaborators, manage roles/remove.
-        *   - [ ] Display shared budget/envelope information appropriately for collaborators.
+    *   - [x] **3.1. Collaboration Model:** Define the relationship in `schema.prisma`. A `BudgetCollaborator` join table linking `User` and `Budget`. Include a `role` (Enum: `OWNER` | `EDITOR` | `VIEWER`). Define the `CollaboratorRole` enum. Ensure the budget creator is added as `OWNER`.
+    *   - [x] **3.2. Invite/Manage Collaborators Actions:** Implement Wasp actions in `src/features/collaboration/operations.ts`:
+        *   - [x] `inviteCollaborator(budgetId: string, email: string, role: CollaboratorRole)`.
+        *   - [x] `removeCollaborator(budgetId: string, userId: string)`.
+        *   - [x] `updateCollaboratorRole(...)`.
+    *   - [x] **3.3. Modify Operations for Permissions:** Update all relevant queries and actions (`getEnvelopes`, `createEnvelope`, `createTransaction`, `getTransactions`, etc.) to check `context.user`'s permissions via `BudgetCollaborator` for the target `Budget`. Ensure users can only affect budgets/envelopes they have access to.
+    *   - [x] **3.4. Collaboration UI:** Add UI elements (e.g., on `BudgetPage.tsx` or settings):
+        *   - [x] For Owners: Invite by email/user search, list collaborators, manage roles/remove.
+        *   - [x] Display shared budget/envelope information appropriately for collaborators.
+        *   - [x] **Visual Distinction:** Add visual indicators (e.g., icons, labels, different styling) on the `BudgetPage.tsx` to clearly distinguish budgets/envelopes the user owns versus those shared with them by others. Consider how to display the owner's information for shared items.
 
 ---
 
@@ -76,5 +77,34 @@ This plan outlines the steps for building the application using a Milestone-Base
         *   - [ ] Use `context.entities.Transaction.createMany(...)`.
         *   - [ ] Return summary/errors.
     *   - [ ] **4.4. Import Feedback UI:** Display results from `processImport` on `CsvImportPage.tsx`.
+
+---
+
+**Phase 5: Security Review & Refinement**
+
+*   **Goal:** Review the implemented features for potential security vulnerabilities and refine logic as needed.
+*   **Areas of Focus:**
+    *   **Authorization Checks:**
+        *   - [ ] Verify that *all* relevant Wasp Operations (actions and queries) have robust checks to ensure the authenticated user (`context.user`) has the correct permissions (e.g., owner, correct collaborator role) for the specific resource (Budget, Envelope, Transaction) being accessed or modified.
+        *   - [ ] Double-check edge cases: Can a user manipulate inputs (e.g., IDs) to access data from budgets they don't own or collaborate on?
+        *   - [ ] Ensure the `checkBudgetPermission` helper function (or equivalent logic) is consistently applied in all write operations and potentially sensitive read operations.
+    *   **Input Validation:**
+        *   - [ ] Review server-side validation in all actions. Are inputs (strings, numbers, IDs) validated for format, range, and existence where necessary?
+        *   - [ ] Consider potential injection risks (though Prisma helps significantly with SQL injection, review any direct data handling).
+        *   - [ ] Review client-side validation (e.g., using Zod in forms) as a first line of defense, but ensure server-side validation is the source of truth.
+    *   **Data Exposure:**
+        *   - [ ] Confirm that queries (e.g., `getBudgetCollaborators`, `findUserByEmail`) only return the necessary data. Avoid leaking sensitive user information (like internal IDs if not strictly needed by the client, detailed auth provider data).
+        *   - [ ] Ensure error messages returned to the client do not leak sensitive internal details.
+    *   **Collaboration Logic:**
+        *   - [ ] Can a user invite themselves?
+        *   - [ ] Can an owner be removed or have their role changed via collaboration actions?
+        *   - [ ] Are role permissions (OWNER, EDITOR, VIEWER) correctly enforced across all relevant operations?
+    *   **Authentication:**
+        *   - [ ] Review Wasp auth configuration ([main.wasp](mdc:main.wasp)) for secure settings (e.g., appropriate redirects, secure email settings if using non-Dummy provider).
+        *   - [ ] Ensure environment variables for auth providers (if used) are kept secure.
+    *   **Dependency Review:**
+        *   - [ ] Briefly review dependencies for known vulnerabilities (can use `npm audit` periodically).
+
+*   **Outcome:** Identify and address any potential security gaps found during the review.
 
 ---

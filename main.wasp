@@ -126,6 +126,12 @@ page Maintenance {
 //#endregion
 
 //#region Budget
+// Query to fetch the user's primary budget details
+query getMyBudget {
+  fn: import { getMyBudget } from "@src/features/budget/operations.ts",
+  entities: [User, Budget] // Access User and Budget
+}
+
 // Action to create a new Envelope
 action createEnvelope {
   fn: import { createEnvelope } from "@src/features/budget/operations.ts",
@@ -135,25 +141,89 @@ action createEnvelope {
 // Action to update an Envelope
 action updateEnvelope {
   fn: import { updateEnvelope } from "@src/features/budget/operations.ts",
-  entities: [User, Budget, Envelope]
+  entities: [User, Budget, Envelope, BudgetCollaborator]
 }
 
 // Action to delete an Envelope
 action deleteEnvelope {
   fn: import { deleteEnvelope } from "@src/features/budget/operations.ts",
-  entities: [User, Budget, Envelope]
+  entities: [User, Budget, Envelope, BudgetCollaborator]
 }
 
-// Query to get Envelopes for the user's budget
+// Query to get Envelopes for the user's budget(s)
 query getEnvelopes {
   fn: import { getEnvelopes } from "@src/features/budget/operations.ts",
-  entities: [User, Budget, Envelope]
+  entities: [User, Budget, Envelope, Transaction, BudgetCollaborator]
 }
 
 // Route and Page for Budget Management UI
 route BudgetRoute { path: "/budget", to: BudgetPage }
 page BudgetPage {
   component: import BudgetPage from "@src/features/budget/BudgetPage.tsx",
-  authRequired: true // Correct syntax for requiring auth
+  authRequired: true
+}
+//#endregion
+
+//#region Transactions
+// Action to create a new Transaction
+action createTransaction {
+  fn: import { createTransaction } from "@src/features/transactions/operations.ts",
+  entities: [User, Budget, Envelope, Transaction]
+}
+
+// Query to get Transactions for the user's budget(s)
+query getTransactions {
+  fn: import { getTransactions } from "@src/features/transactions/operations.ts",
+  entities: [User, Budget, Envelope, Transaction, BudgetCollaborator]
+}
+
+// Action to update a Transaction
+action updateTransaction {
+  fn: import { updateTransaction } from "@src/features/transactions/operations.ts",
+  entities: [User, Budget, Envelope, Transaction]
+}
+
+// Action to delete a Transaction
+action deleteTransaction {
+  fn: import { deleteTransaction } from "@src/features/transactions/operations.ts",
+  entities: [User, Budget, Envelope, Transaction]
+}
+
+// Route and Page for Transaction Management UI
+route TransactionsRoute { path: "/transactions", to: TransactionsPage }
+page TransactionsPage {
+  component: import TransactionsPage from "@src/features/transactions/TransactionsPage.tsx",
+  authRequired: true
+}
+//#endregion
+
+//#region Users
+// Query to find a user by their email address
+query findUserByEmail {
+  fn: import { findUserByEmail } from "@src/features/users/operations.ts",
+  entities: [User]
+}
+//#endregion
+
+//#region Collaboration
+action inviteCollaborator {
+  fn: import { inviteCollaborator } from "@src/features/collaboration/operations.ts",
+  entities: [User, Budget, BudgetCollaborator]
+}
+
+action removeCollaborator {
+  fn: import { removeCollaborator } from "@src/features/collaboration/operations.ts",
+  entities: [User, Budget, BudgetCollaborator]
+}
+
+action updateCollaboratorRole {
+  fn: import { updateCollaboratorRole } from "@src/features/collaboration/operations.ts",
+  entities: [User, Budget, BudgetCollaborator] // Need access to check owner and update record
+}
+
+// Query to get collaborators for a specific budget
+query getBudgetCollaborators {
+  fn: import { getBudgetCollaborators } from "@src/features/collaboration/operations.ts",
+  entities: [User, Budget, BudgetCollaborator]
 }
 //#endregion
